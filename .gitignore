@@ -1,3 +1,5 @@
+matrix_propagator_incompressible_machinery.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
