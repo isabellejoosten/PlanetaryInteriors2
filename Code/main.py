@@ -19,3 +19,5 @@ print(tide)
 print("Averaged bulk modulus: ", bulkModulus_homogeneous/1000000000, " GPa")
 print("Averaged shear modulus: ", shearModulus_homogeneous/1000000000, " GPa")
 print("Averaged viscosity: ", viscosity_homogeneous, " Pa*s")
+
+functions.analytical_k_n(2,p.mu,p.bulkDensity,p.g,p.R)

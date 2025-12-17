@@ -5,3 +5,9 @@ def sphereVolume(radius):
 
 def shellVolume(innerRadius, outerRadius):
     return sphereVolume(outerRadius) - sphereVolume(innerRadius)
+
+def analytical_k_n(n,mu,bulkDensity,g,R):
+    k_n = 2 / (2*(n-1)) * (1 / (1 + mu_n_hat))
+    mu_n_hat = (2*n**2+4*n+3)/n * mu_eff_hat
+    mu_eff_hat = mu / (bulkDensity * g * R)
+    return k_n
