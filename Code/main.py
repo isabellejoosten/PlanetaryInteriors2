@@ -13,6 +13,8 @@ layers = [delftide.TidalLayer("Titan", thickness=p.R, density=p.bulkDensity, she
 omega = 4.56e-6
 model = delftide.TidalInterior("Homogeneous Titan", layers)
 tide = delftide.TidalResponse(model, omega)
+tide.plot()
+print(tide)
 
 print("Averaged bulk modulus: ", bulkModulus_homogeneous/1000000000, " GPa")
 print("Averaged shear modulus: ", shearModulus_homogeneous/1000000000, " GPa")

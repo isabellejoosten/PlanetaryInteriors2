@@ -433,7 +433,7 @@ class TidalResponse:
         ax_big.set_xlim(0, 1)
 
         # Add supertitle with the interior model name
-        fig.suptitle(f"Tidal Response for {self.interior_model.name}", fontsize=16, y=1.02)
+        fig.suptitle(f"Tidal Response for {self.interior_model.name}", fontsize=16, y=0.98)
 
         plt.tight_layout()
         plt.show()
@@ -755,9 +755,9 @@ class TidalResponse:
             return model, tide
 
  # Run all examples if simply called
-if __name__ == "__main__":
-    TidalResponse.examples.mantle_dominated_io()
-    TidalResponse.examples.asthenosphere_dominated_io()
-    TidalResponse.examples.titan()
-    TidalResponse.examples.europa()
+#if __name__ == "__main__":
+#    TidalResponse.examples.mantle_dominated_io()
+#    TidalResponse.examples.asthenosphere_dominated_io()
+#    TidalResponse.examples.titan()
+#    TidalResponse.examples.europa()
 
