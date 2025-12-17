@@ -1,5 +1,7 @@
 R = 2575000                             # Total radius in meters
 bulkDensity = 1881.4                    # kg/m^3
+mu = 8978.1394e9                        # m^3/s^2
+g = 1.352
 
 # Layer thicknesses
 R_core = 2100000                        # m

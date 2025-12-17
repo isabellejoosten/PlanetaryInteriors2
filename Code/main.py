@@ -16,6 +16,9 @@ tide = delftide.TidalResponse(model, omega)
 tide.plot()
 print(tide)
 
+k2_verification = functions.k2_analytical(p.mu, p.bulkDensity, p.g, p.R, viscosity_homogeneous, omega)
+print("k2 calculated analytically: ", k2_verification)
+
 print("Averaged bulk modulus: ", bulkModulus_homogeneous/1000000000, " GPa")
 print("Averaged shear modulus: ", shearModulus_homogeneous/1000000000, " GPa")
 print("Averaged viscosity: ", viscosity_homogeneous, " Pa*s")
