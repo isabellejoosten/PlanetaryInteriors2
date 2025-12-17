@@ -5,3 +5,9 @@ def sphereVolume(radius):
 
 def shellVolume(innerRadius, outerRadius):
     return sphereVolume(outerRadius) - sphereVolume(innerRadius)
+
+def k2_analytical(mu, rho, g, radius, viscosity, omega):
+    a = mu/(rho*g*radius)
+    b = 1/(1-(complex(0, mu))/(viscosity*omega))
+
+    return 3/2*1/(1+(19/2)*a*b)
