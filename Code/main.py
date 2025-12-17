@@ -16,13 +16,18 @@ tide = delftide.TidalResponse(model, omega)
 tide.plot()
 print(tide)
 
-k2_verification = functions.k2_analytical(p.mu, p.bulkDensity, p.g, p.R, viscosity_homogeneous, omega)
+k2_verification = functions.k2_analytical(shearModulus_homogeneous, p.bulkDensity, p.g, p.R, viscosity_homogeneous, omega)
 print("k2 calculated analytically: ", k2_verification)
-k2_verification2 = functions.analytical_k_n(2,p.mu,p.bulkDensity,p.g,p.R)
-print("k2 calculated analytically with version 2", k2_verification2)
+#k2_verification2 = functions.analytical_k_n(2,p.mu,p.bulkDensity,p.g,p.R)
+#print("k2 calculated analytically with version 2", k2_verification2)
+#print(float(tide.k2.real))
+k2error_real = (float(k2_verification.real) - float(tide.k2.real)) / float(tide.k2.real) * 100
+k2error_im = (float(k2_verification.imag) - float(tide.k2.imag)) / float(tide.k2.imag) * 100
+print("k2 error (real part): ", k2error_real, "%")
+print("k2 error (imaginary part): ", k2error_im, "%")
 
 print("Averaged bulk modulus: ", bulkModulus_homogeneous/1000000000, " GPa")
 print("Averaged shear modulus: ", shearModulus_homogeneous/1000000000, " GPa")
 print("Averaged viscosity: ", viscosity_homogeneous, " Pa*s")
 
-functions.analytical_k_n(2,p.mu,p.bulkDensity,p.g,p.R)
+#functions.analytical_k_n(2,p.mu,p.bulkDensity,p.g,p.R)
