@@ -1,4 +1,5 @@
-matrix_propagator_incompressible_machinery.py
+#matrix_propagator_incompressible_machinery.py
+#rheologies.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
