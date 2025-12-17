@@ -18,6 +18,8 @@ print(tide)
 
 k2_verification = functions.k2_analytical(p.mu, p.bulkDensity, p.g, p.R, viscosity_homogeneous, omega)
 print("k2 calculated analytically: ", k2_verification)
+k2_verification2 = functions.analytical_k_n(2,p.mu,p.bulkDensity,p.g,p.R)
+print("k2 calculated analytically with version 2", k2_verification2)
 
 print("Averaged bulk modulus: ", bulkModulus_homogeneous/1000000000, " GPa")
 print("Averaged shear modulus: ", shearModulus_homogeneous/1000000000, " GPa")
