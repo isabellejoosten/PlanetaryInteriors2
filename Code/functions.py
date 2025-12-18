@@ -26,7 +26,7 @@ def computeError_complex(a, b):
 
     return errorReal, errorIm
 
-def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type):
+def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type, plot=True):
     """Type = "e": elastic rheology
     Type = "v": viscoelastic rheology
     Type = "l": liquid rheology"""
@@ -50,7 +50,9 @@ def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type):
         h2_verification = h2_analytical(shearModulus, bulkDensity, p.g, p.R, viscosity, omega)
     model = delftide.TidalInterior(modelName, layers)
     tide = delftide.TidalResponse(model, omega)
-    tide.plot()
+    if plot==True:
+        tide.plot()
+
     print(modelName)
     print(tide.k2)
     print(tide.h2)
@@ -63,7 +65,6 @@ def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type):
     print("h2 error (imaginary part): ", round(h2errorIm*100, 5), "%")
     
     return tide
-    print(tide)
 
 def multiLayerTitan():
     R_core,density_core,density_ocean = MultiLayerSolver()
@@ -107,3 +108,13 @@ def MultiLayerSolver():
     density_ocean = solution[0][density_ocean]
     return float(R_core),float(density_core),float(density_ocean)
 
+def find_slope(array1, array2):
+    '''Finds the absolute value of the slope of a curve for each data point.'''
+    slope = []
+    for i in range(len(array1)):
+        if i == len(array1)-1:
+            derivative = 0
+        else:
+            derivative = abs((array1[i+1]-array1[i])/(array2[i+1]-array2[i]))
+        slope.append(derivative)
+    return slope
