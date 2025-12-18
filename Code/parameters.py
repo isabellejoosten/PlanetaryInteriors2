@@ -2,6 +2,7 @@ R = 2575000.0                               # Total radius in meters
 bulkDensity = 1881.4                        # kg/m^3
 mu = 8978.1394e9                            # m^3/s^2
 g = 1.352
+MoI_factor = 0.3414                     # no
 
 # Layers thicknesses
 thick_core = 2100000.0                      # m
@@ -14,6 +15,12 @@ R_core = thick_core                         # m
 R_HPI = R_core + thick_HPI                  # m
 R_ocean = R_HPI + thick_ocean               # m
 R_crust = R                                 # m
+
+#Density
+density_core = 0                        #kg/m^3
+density_HPI = 1340                      #kg/m^3
+density_ocean = 0                       #kg/m^3
+density_crust = 925                     #kg/m^3
 
 # Rheology
 bulkModulus_core = 200.0e9                  # Pa

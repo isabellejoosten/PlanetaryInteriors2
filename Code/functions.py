@@ -62,3 +62,20 @@ def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type):
     print("h2 error (imaginary part): ", round(h2errorIm*100, 5), "%")
     
     return tide
+    print(tide)
+
+
+def MomentOfInertiaSphere(radius, density):
+    return 2/5*sphereVolume(radius)*density*radius**2
+
+def MomentOfInertiaShell(innerRadius, outerRadius, density):
+    return 2/5*(shellVolume(innerRadius,outerRadius)*density)*((outerRadius**5-innerRadius**5)/(outerRadius**3-innerRadius**3))
+
+def totalRadius(R_core,R_HPI,R_ocean,R_crust):
+    return R_core + R_HPI + R_ocean + R_crust
+
+def bulkdensity(R_core, density_core, R_HPI, density_HPI, R_ocean, density_ocean, R_crust, density_crust):
+    return (sphereVolume(R_core)*density_core + shellVolume(R_core,R_HPI) * density_HPI + shellVolume(R_HPI,R_ocean) * density_ocean + shellVolume(R_ocean,R_crust) * density_crust) / sphereVolume(R_crust)
+
+def MomentOfInertiaPlanet(R_core, density_core, R_HPI, density_HPI, R_ocean, density_ocean, R_crust, density_crust):
+    return MomentOfInertiaSphere(R_core, density_core) + MomentOfInertiaShell(R_core,R_HPI,density_HPI) + MomentOfInertiaShell(R_HPI, R_ocean,density_ocean) + MomentOfInertiaShell(R_ocean,R_crust,density_crust)
