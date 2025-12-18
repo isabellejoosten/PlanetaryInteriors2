@@ -34,23 +34,31 @@ def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type):
         layers = [delftide.TidalLayer(modelName, thickness=radius, density=bulkDensity, shear_modulus=shearModulus, viscosity=viscosity)]
         omega = 4.56e-6
         k2_verification = k2_analytical(shearModulus, bulkDensity, p.g, p.R, viscosity, omega)
+        h2_verification = h2_analytical(shearModulus, bulkDensity, p.g, p.R, viscosity, omega)
     elif type == "e":
         modelName = "Single-layer Titan, elastic"
-        layers = [delftide.TidalLayer(modelName, thickness=radius, density=bulkDensity, rheology=rheologies.ElasticRheology()),]
+        layers = [delftide.TidalLayer(modelName, thickness=radius, density=bulkDensity, shear_modulus=shearModulus, viscosity=1e-20)]
         omega = 4.56e-6
-        k2_verification = k2_analytical(1.0, bulkDensity, p.g, p.R, viscosity, omega)
+        k2_verification = k2_analytical(shearModulus, bulkDensity, p.g, p.R, 1e-20, omega)
+        h2_verification = h2_analytical(shearModulus, bulkDensity, p.g, p.R, 1e-20, omega)
     elif type == "l":
         modelName = "Single-layer Titan, liquid"
-        layers = [delftide.TidalLayer(modelName, thickness=radius, density=bulkDensity, rheology=rheologies.LiquidRheology()),]
-        omega = 1.0
-        k2_verification = k2_analytical(shearModulus, bulkDensity, p.g, p.R, 1.0, omega)
+        layers = [delftide.TidalLayer(modelName, thickness=radius, density=bulkDensity, shear_modulus=shearModulus, viscosity=viscosity)]
+        omega = 0.00000000000000000000001
+        k2_verification = k2_analytical(shearModulus, bulkDensity, p.g, p.R, viscosity, omega)
+        h2_verification = h2_analytical(shearModulus, bulkDensity, p.g, p.R, viscosity, omega)
     model = delftide.TidalInterior(modelName, layers)
     tide = delftide.TidalResponse(model, omega)
     tide.plot()
     print(modelName)
-    print(tide)
+    print(tide.k2)
+    print(tide.h2)
     k2errorReal, k2errorIm = computeError_complex(k2_verification, tide.k2)
-    print("k2 error (real part): ", k2errorReal, "%")
-    print("k2 error (imaginary part): ", k2errorIm, "%")
+    print("k2 error (real part): ", round(k2errorReal*100, 5), "%")
+    print("k2 error (imaginary part): ", round(k2errorIm*100, 5), "%")
+
+    h2errorReal, h2errorIm = computeError_complex(h2_verification, tide.h2)
+    print("h2 error (real part): ", round(h2errorReal*100, 5), "%")
+    print("h2 error (imaginary part): ", round(h2errorIm*100, 5), "%")
     
     return tide
