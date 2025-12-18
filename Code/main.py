@@ -46,12 +46,10 @@ print("h2 error (real part): ", h2error_real, "%")
 R_core, density_core, density_ocean = sympy.symbols('R_core, density_core, density_ocean')
 eq1 = sympy.Eq(functions.totalRadius(R_core, p.R_HPI, p.R_ocean, p.R_ocean),p.R)
 eq2 = sympy.Eq(functions.bulkdensity(R_core, density_core, p.R_HPI, p.density_HPI, p.R_ocean, density_ocean, p.R_crust, p.density_crust),p.bulkDensity)
-eq3 = sympy.Eq(functions.MomentOfInertiaPlanet(R_core, density_core, p.R_HPI, p.density_HPI, p.R_ocean, density_ocean, p.R_crust, p.density_crust),p.MoI_factor*R**2*functions.sphereVolume(p.R)*p.bulkDensity)
+eq3 = sympy.Eq(functions.MomentOfInertiaPlanet(R_core, density_core, p.R_HPI, p.density_HPI, p.R_ocean, density_ocean, p.R_crust, p.density_crust),p.MoI_factor*p.R**2*functions.sphereVolume(p.R)*p.bulkDensity)
 
-solution = sympy.solve([eq1,eq2,eq3],[R_core,density_core,density_ocean])
-print(f'R_core = {solution[R_core]}')
-print(f'density_core = {solution[density_core]}')
-print(f'density_ocean = {solution[density_ocean]}')
+solution = sympy.solve((eq1,eq2,eq3),(R_core,density_core,density_ocean))
+print(solution)
 
 
 print("Averaged bulk modulus: ", bulkModulus_homogeneous/1000000000, " GPa")
