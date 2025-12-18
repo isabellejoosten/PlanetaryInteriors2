@@ -4,6 +4,8 @@ import matrix_propagator_incompressible_machinery as delftide
 import rheologies
 import parameters as p
 import functions
+import sympy
+
 
 # averages
 bulkModulus_homogeneous = (p.bulkModulus_core*functions.sphereVolume(p.R_core) + p.bulkModulus_HPI*functions.shellVolume(p.R_core, p.R_HPI) + p.bulkModulus_ocean*functions.shellVolume(p.R_HPI, p.R_ocean) + p.bulkModulus_crust*functions.shellVolume(p.R_ocean, p.R)) / functions.sphereVolume(p.R)
@@ -40,6 +42,17 @@ h2error_real = (float(h2_verification.real) - float(tide.h2.real)) / float(tide.
 #h2error_im = (float(h2_verification.imag) - float(tide.h2.imag)) / float(tide.h2.imag) * 100
 print("h2 error (real part): ", h2error_real, "%")
 #print("h2 error (imaginary part): ", h2error_im, "%")
+
+R_core, density_core, density_ocean = sympy.symbols('R_core, density_core, density_ocean')
+eq1 = sympy.Eq(functions.totalRadius(R_core, p.R_HPI, p.R_ocean, p.R_ocean),p.R)
+eq2 = sympy.Eq(functions.bulkdensity(R_core, density_core, p.R_HPI, p.density_HPI, p.R_ocean, density_ocean, p.R_crust, p.density_crust),p.bulkDensity)
+eq3 = sympy.Eq(functions.MomentOfInertiaPlanet(R_core, density_core, p.R_HPI, p.density_HPI, p.R_ocean, density_ocean, p.R_crust, p.density_crust),p.MoI_factor*R**2*functions.sphereVolume(p.R)*p.bulkDensity)
+
+solution = sympy.solve([eq1,eq2,eq3],[R_core,density_core,density_ocean])
+print(f'R_core = {solution[R_core]}')
+print(f'density_core = {solution[density_core]}')
+print(f'density_ocean = {solution[density_ocean]}')
+
 
 print("Averaged bulk modulus: ", bulkModulus_homogeneous/1000000000, " GPa")
 print("Averaged shear modulus: ", shearModulus_homogeneous/1000000000, " GPa")
