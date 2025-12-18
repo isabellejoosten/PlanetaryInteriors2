@@ -25,7 +25,7 @@ def computeError_complex(a, b):
 
     return errorReal, errorIm
 
-def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type):
+def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type, plot=True):
     """Type = "e": elastic rheology
     Type = "v": viscoelastic rheology
     Type = "l": liquid rheology"""
@@ -49,7 +49,9 @@ def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type):
         h2_verification = h2_analytical(shearModulus, bulkDensity, p.g, p.R, viscosity, omega)
     model = delftide.TidalInterior(modelName, layers)
     tide = delftide.TidalResponse(model, omega)
-    tide.plot()
+    if plot==True:
+        tide.plot()
+
     print(modelName)
     print(tide.k2)
     print(tide.h2)
@@ -62,7 +64,6 @@ def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type):
     print("h2 error (imaginary part): ", round(h2errorIm*100, 5), "%")
     
     return tide
-    print(tide)
 
 
 def MomentOfInertiaSphere(radius, density):
