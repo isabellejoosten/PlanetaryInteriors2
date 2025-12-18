@@ -140,7 +140,7 @@ plt.show()
 
 # plot for viscosity slope
 fig, axs = plt.subplots(2, 2, sharex=True)
-fig.suptitle('Sensitivity of Love numbers to changes in shear modulus')
+fig.suptitle('Sensitivity of Love numbers to changes in viscosity')
 axs[0,0].set_title('k2, real part')
 axs[1,0].set_xlabel('Viscosity')
 axs[1,1].set_xlabel('Viscosity')
