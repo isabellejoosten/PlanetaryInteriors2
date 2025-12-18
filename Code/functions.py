@@ -80,3 +80,14 @@ def bulkdensity(R_core, density_core, R_HPI, density_HPI, R_ocean, density_ocean
 
 def MomentOfInertiaPlanet(R_core, density_core, R_HPI, density_HPI, R_ocean, density_ocean, R_crust, density_crust):
     return MomentOfInertiaSphere(R_core, density_core) + MomentOfInertiaShell(R_core,R_HPI,density_HPI) + MomentOfInertiaShell(R_HPI, R_ocean,density_ocean) + MomentOfInertiaShell(R_ocean,R_crust,density_crust)
+
+def find_slope(array1, array2):
+    '''Finds the absolute value of the slope of a curve for each data point.'''
+    slope = []
+    for i in range(len(array1)):
+        if i == len(array1)-1:
+            derivative = 0
+        else:
+            derivative = abs((array1[i+1]-array1[i])/(array2[i+1]-array2[i]))
+        slope.append(derivative)
+    return slope

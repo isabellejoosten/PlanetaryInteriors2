@@ -26,6 +26,7 @@ for i in range_shearModulus:
     shear_k2_im.append(abs(float(tide_viscoelastic.k2.imag)))
     shear_h2_real.append(float(tide_viscoelastic.h2.real))
     shear_h2_im.append(float(tide_viscoelastic.h2.imag))
+shearlists = [shear_k2_real, shear_k2_im, shear_h2_real, shear_h2_im]
 
 visc_k2_real = []
 visc_k2_im = []
@@ -38,8 +39,9 @@ for i in range_viscosity:
     visc_k2_im.append(abs(float(tide_viscoelastic.k2.imag)))
     visc_h2_real.append(float(tide_viscoelastic.h2.real))
     visc_h2_im.append(float(tide_viscoelastic.h2.imag))
+visclists = [visc_k2_real, visc_k2_im, visc_h2_real, visc_h2_im]
 
-# making plots
+# plot for shear modulus
 fig, axs = plt.subplots(2, 2, sharex=True)
 fig.suptitle('Sensitivity of Love numbers to changes in shear modulus')
 axs[0,0].set_title('k2, real part')
@@ -68,8 +70,7 @@ axs[1,1].plot(range_shearModulus, shear_h2_im, label='h2 imaginary', color='oran
 
 plt.show()
 
-#plt.clf()
-
+# plot for viscosity
 fig, axs = plt.subplots(2, 2, sharex=True)
 fig.suptitle('Sensitivity of Love numbers to changes in viscosity')
 axs[0,0].set_title('k2, real part')
@@ -95,5 +96,73 @@ axs[1,1].set_title('h2, imaginary part')
 axs[1,1].set_ylabel('h2 (imaginary)')
 axs[1,1].set_xscale('log')
 axs[1,1].plot(range_viscosity, visc_h2_im, label='h2 imaginary', color='orange')
+
+plt.show()
+
+# Derivatives
+shearslopes = []
+for array in shearlists:
+    slope = functions.find_slope(array, range_shearModulus)
+    shearslopes.append(slope)
+viscslopes = []
+for array in visclists:
+    slope = functions.find_slope(array, range_viscosity)
+    viscslopes.append(slope)
+
+# plot for shear modulus slope
+fig, axs = plt.subplots(2, 2, sharex=True)
+fig.suptitle('Sensitivity of Love numbers to changes in shear modulus')
+axs[0,0].set_title('k2, real part')
+axs[1,0].set_xlabel('Shear modulus')
+axs[1,1].set_xlabel('Shear modulus')
+axs[0,0].set_ylabel('Slope (absolute value)')
+axs[0,0].set_xscale('log')
+#axs[0,0].set_yscale('log')
+axs[0,0].plot(range_shearModulus, shearslopes[0], label='k2 real', color='blue')
+axs[0,1].set_xscale('log')
+#axs[0,1].set_yscale('log')
+axs[0,1].set_title('k2, imaginary part')
+axs[0,1].set_ylabel('Slope (absolute value)')
+axs[0,1].plot(range_shearModulus, shearslopes[1], label='k2 imaginary', color='red')
+
+#axs[1,0].set_yscale('log')
+axs[1,0].set_xscale('log')
+axs[1,0].set_title('h2, real part')
+axs[1,0].set_ylabel('Slope (absolute value)')
+axs[1,0].plot(range_shearModulus, shearslopes[2], label='h2 real', color='green')
+#axs[1,1].set_yscale('log')
+axs[1,1].set_title('h2, imaginary part')
+axs[1,1].set_ylabel('Slope (absolute value)')
+axs[1,1].set_xscale('log')
+axs[1,1].plot(range_shearModulus, shearslopes[3], label='h2 imaginary', color='orange')
+
+plt.show()
+
+# plot for viscosity slope
+fig, axs = plt.subplots(2, 2, sharex=True)
+fig.suptitle('Sensitivity of Love numbers to changes in shear modulus')
+axs[0,0].set_title('k2, real part')
+axs[1,0].set_xlabel('Viscosity')
+axs[1,1].set_xlabel('Viscosity')
+axs[0,0].set_ylabel('Slope (absolute value)')
+axs[0,0].set_xscale('log')
+#axs[0,0].set_yscale('log')
+axs[0,0].plot(range_viscosity, viscslopes[0], label='k2 real', color='blue')
+axs[0,1].set_xscale('log')
+#axs[0,1].set_yscale('log')
+axs[0,1].set_title('k2, imaginary part')
+axs[0,1].set_ylabel('Slope (absolute value)')
+axs[0,1].plot(range_viscosity, viscslopes[1], label='k2 imaginary', color='red')
+
+#axs[1,0].set_yscale('log')
+axs[1,0].set_xscale('log')
+axs[1,0].set_title('h2, real part')
+axs[1,0].set_ylabel('Slope (absolute value)')
+axs[1,0].plot(range_viscosity, viscslopes[2], label='h2 real', color='green')
+#axs[1,1].set_yscale('log')
+axs[1,1].set_title('h2, imaginary part')
+axs[1,1].set_ylabel('Slope (absolute value)')
+axs[1,1].set_xscale('log')
+axs[1,1].plot(range_viscosity, viscslopes[3], label='h2 imaginary', color='orange')
 
 plt.show()
