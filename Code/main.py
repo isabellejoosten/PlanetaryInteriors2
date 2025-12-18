@@ -58,3 +58,6 @@ print("Averaged bulk modulus: ", bulkModulus_homogeneous/1000000000, " GPa")
 print("Averaged shear modulus: ", shearModulus_homogeneous/1000000000, " GPa")
 print("Averaged viscosity: ", viscosity_homogeneous, " Pa*s")
 
+tide_elastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e")
+tide_viscoelastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "v")
+tide_liquid = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "l")
