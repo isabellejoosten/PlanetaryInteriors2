@@ -2,6 +2,7 @@ import math
 import matrix_propagator_incompressible_machinery as delftide
 import rheologies
 import parameters as p
+import sympy
 
 def sphereVolume(radius):
     return 4/3*math.pi*radius**3
@@ -65,6 +66,20 @@ def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type, plot=Tr
     
     return tide
 
+def multiLayerTitan():
+    R_core,density_core,density_ocean = MultiLayerSolver()
+    layers = [
+    delftide.TidalLayer("Core               ", thickness=R_core , density=density_core, shear_modulus=p.shearModulus_core, viscosity=p.viscosity_core),
+    delftide.TidalLayer("High Pressure Ice  ", thickness=p.thick_HPI, density=p.density_HPI, shear_modulus=p.shearModulus_HPI, viscosity=p.viscosity_HPI),
+    delftide.TidalLayer("Subsurface Ocean   ", thickness=p.thick_ocean, density=density_ocean, rheology=rheologies.LiquidRheology()),
+    delftide.TidalLayer("Crust              ", thickness=p.thick_crust, density=p.density_crust, shear_modulus=p.shearModulus_crust, viscosity=p.viscosity_crust),
+    ]
+    omega = 4.56e-6
+    model = delftide.TidalInterior("Multi-layer Titan", layers)
+    tide = delftide.TidalResponse(model, omega)
+    tide.plot()
+    print(tide)
+    return model, tide
 
 def MomentOfInertiaSphere(radius, density):
     return 2/5*sphereVolume(radius)*density*radius**2
@@ -80,6 +95,18 @@ def bulkdensity(R_core, density_core, R_HPI, density_HPI, R_ocean, density_ocean
 
 def MomentOfInertiaPlanet(R_core, density_core, R_HPI, density_HPI, R_ocean, density_ocean, R_crust, density_crust):
     return MomentOfInertiaSphere(R_core, density_core) + MomentOfInertiaShell(R_core,R_HPI,density_HPI) + MomentOfInertiaShell(R_HPI, R_ocean,density_ocean) + MomentOfInertiaShell(R_ocean,R_crust,density_crust)
+
+def MultiLayerSolver():
+    R_core, density_core, density_ocean = sympy.symbols('R_core, density_core, density_ocean')
+    eq1 = sympy.Eq(totalRadius(R_core, p.thick_HPI, p.thick_ocean, p.thick_crust),p.R)
+    eq2 = sympy.Eq(bulkdensity(R_core, density_core, p.R_HPI, p.density_HPI, p.R_ocean, density_ocean, p.R_crust, p.density_crust),p.bulkDensity)
+    eq3 = sympy.Eq(MomentOfInertiaPlanet(R_core, density_core, p.R_HPI, p.density_HPI, p.R_ocean, density_ocean, p.R_crust, p.density_crust),p.MoI_factor*p.R**2*sphereVolume(p.R)*p.bulkDensity)
+
+    solution = sympy.solve((eq1,eq2,eq3),R_core,density_core,density_ocean,dict=True)
+    R_core = solution[0][R_core]
+    density_core = solution[0][density_core]
+    density_ocean = solution[0][density_ocean]
+    return float(R_core),float(density_core),float(density_ocean)
 
 def find_slope(array1, array2):
     '''Finds the absolute value of the slope of a curve for each data point.'''

@@ -17,18 +17,28 @@ viscosity_homogeneous = (p.viscosity_core*functions.sphereVolume(p.R_core) + p.v
 #tide_viscoelastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "v")
 #tide_liquid = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "l")
 
-R_core, density_core, density_ocean = sympy.symbols('R_core, density_core, density_ocean')
-eq1 = sympy.Eq(functions.totalRadius(R_core, p.R_HPI, p.R_ocean, p.R_ocean),p.R)
-eq2 = sympy.Eq(functions.bulkdensity(R_core, density_core, p.R_HPI, p.density_HPI, p.R_ocean, density_ocean, p.R_crust, p.density_crust),p.bulkDensity)
-eq3 = sympy.Eq(functions.MomentOfInertiaPlanet(R_core, density_core, p.R_HPI, p.density_HPI, p.R_ocean, density_ocean, p.R_crust, p.density_crust),p.MoI_factor*p.R**2*functions.sphereVolume(p.R)*p.bulkDensity)
+# Sensitivity study for the viscoelastic case
+range_shearModulus = np.arange(0.1*shearModulus_homogeneous, 10.1*shearModulus_homogeneous, 0.001*shearModulus_homogeneous)
+range_viscosity = np.arange(10.0e-5*viscosity_homogeneous, 10.0e5*viscosity_homogeneous, 100.0*viscosity_homogeneous)
 
-solution = sympy.solve((eq1,eq2,eq3),(R_core,density_core,density_ocean))
-print(solution)
 
+R_core,density_core,density_ocean = functions.MultiLayerSolver()
+
+print("Radius of the core is ", np.floor(R_core/10**3) , 'km')
+print("Density of the core is ", np.floor(density_core) , 'kg/m^3')
+print("Density of the ocean is ", np.floor(density_ocean) , 'kg/m^3')
+
+
+'''
 print("Averaged bulk modulus: ", bulkModulus_homogeneous/1000000000, " GPa")
 print("Averaged shear modulus: ", shearModulus_homogeneous/1000000000, " GPa")
 print("Averaged viscosity: ", viscosity_homogeneous, " Pa*s")
+'''
 
-tide_elastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e")
-tide_viscoelastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "v")
-tide_liquid = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "l")
+#tide_elastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e")
+#tide_viscoelastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "v")
+#tide_liquid = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "l")
+
+
+tide_multilayer = functions.multiLayerTitan()
+titan = delftide.TidalResponse.examples.titan()
