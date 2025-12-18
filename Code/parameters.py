@@ -3,11 +3,17 @@ bulkDensity = 1881.4                    # kg/m^3
 mu = 8978.1394e9                        # m^3/s^2
 g = 1.352
 
-# Layer thicknesses
-R_core = 2100000                        # m
-R_HPI = 4000                            # m
-R_ocean = 400000                        # m
-R_crust = 70000                         # m
+# Layers thicknesses
+thick_core = 2100000                    # m
+thick_HPI = 4000                        # m
+thick_ocean = 400000                    # m
+thick_crust = 70000                     # m
+
+# Layer radii
+R_core = thick_core                     # m
+R_HPI = R_core + thick_HPI              # m
+R_ocean = R_HPI + thick_ocean           # m
+R_crust = R                             # m
 
 # Rheology
 bulkModulus_core = 200e9                # Pa

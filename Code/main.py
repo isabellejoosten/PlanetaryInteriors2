@@ -10,35 +10,6 @@ bulkModulus_homogeneous = (p.bulkModulus_core*functions.sphereVolume(p.R_core) +
 shearModulus_homogeneous = (p.shearModulus_core*functions.sphereVolume(p.R_core) + p.shearModulus_HPI*functions.shellVolume(p.R_core, p.R_HPI) + p.shearModulus_ocean*functions.shellVolume(p.R_HPI, p.R_ocean)  + p.shearModulus_crust*functions.shellVolume(p.R_ocean, p.R)) / functions.sphereVolume(p.R)
 viscosity_homogeneous = (p.viscosity_core*functions.sphereVolume(p.R_core) + p.viscosity_HPI*functions.shellVolume(p.R_core, p.R_HPI) + p.viscosity_ocean*functions.shellVolume(p.R_HPI, p.R_ocean)  + p.viscosity_crust*functions.shellVolume(p.R_ocean, p.R)) / functions.sphereVolume(p.R)
 
-# Single-layer model - viscoelastic
-layers = [delftide.TidalLayer("Titan", thickness=p.R, density=p.bulkDensity, shear_modulus=shearModulus_homogeneous, viscosity=viscosity_homogeneous)]
-omega = 4.56e-6
-model = delftide.TidalInterior("Homogeneous Titan", layers)
-tide = delftide.TidalResponse(model, omega)
-tide.plot()
-print(tide)
-
-# Single-layer model - viscoelastic
-layers = [delftide.TidalLayer("Titan", thickness=p.R, density=p.bulkDensity, shear_modulus=shearModulus_homogeneous, viscosity=viscosity_homogeneous)]
-omega = 4.56e-6
-model = delftide.TidalInterior("Homogeneous Titan", layers)
-tide = delftide.TidalResponse(model, omega)
-tide.plot()
-print(tide)
-
-k2_verification = functions.k2_analytical(shearModulus_homogeneous, p.bulkDensity, p.g, p.R, viscosity_homogeneous, omega)
-print("k2 calculated analytically: ", k2_verification)
-k2errorReal, k2errorIm = functions.computeError_complex(k2_verification, tide.k2)
-print("k2 error (real part): ", k2errorReal, "%")
-print("k2 error (imaginary part): ", k2errorIm, "%")
-
-h2_verification = functions.h2_analytical(shearModulus_homogeneous, p.bulkDensity, p.g, p.R, viscosity_homogeneous, omega)
-h2errorReal, h2errorIm = functions.computeError_complex(h2_verification, tide.h2)
-print("h2 error (real part): ", h2errorReal, "%")
-print("h2 error (imaginary part): ", h2errorIm, "%")
-
-print("Averaged bulk modulus: ", bulkModulus_homogeneous/1000000000, " GPa")
-print("Averaged shear modulus: ", shearModulus_homogeneous/1000000000, " GPa")
-print("Averaged viscosity: ", viscosity_homogeneous, " Pa*s")
-
-#functions.analytical_k_n(2,p.mu,p.bulkDensity,p.g,p.R)
+tide_elastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e")
+tide_viscoelastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "v")
+tide_liquid = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "l")
