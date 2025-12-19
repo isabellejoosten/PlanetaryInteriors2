@@ -66,13 +66,13 @@ def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type, plot=Tr
     
     return tide
 
-def multiLayerTitan():
-    R_core,density_core,density_ocean = MultiLayerSolver()
+def multiLayerTitan(known):
+    thick_core, thick_HPI, thick_ocean, thick_crust, density_core, density_HPI, density_ocean, density_crust = MultiLayerSolver(known)
     layers = [
-    delftide.TidalLayer("Core               ", thickness=R_core , density=density_core, shear_modulus=p.shearModulus_core, viscosity=p.viscosity_core),
-    delftide.TidalLayer("High Pressure Ice  ", thickness=p.thick_HPI, density=p.density_HPI, shear_modulus=p.shearModulus_HPI, viscosity=p.viscosity_HPI),
-    delftide.TidalLayer("Subsurface Ocean   ", thickness=p.thick_ocean, density=density_ocean, rheology=rheologies.LiquidRheology()),
-    delftide.TidalLayer("Crust              ", thickness=p.thick_crust, density=p.density_crust, shear_modulus=p.shearModulus_crust, viscosity=p.viscosity_crust),
+    delftide.TidalLayer("Core               ", thickness=thick_core , density=density_core, shear_modulus=p.shearModulus_core, viscosity=p.viscosity_core),
+    delftide.TidalLayer("High Pressure Ice  ", thickness=thick_HPI, density=density_HPI, shear_modulus=p.shearModulus_HPI, viscosity=p.viscosity_HPI),
+    delftide.TidalLayer("Subsurface Ocean   ", thickness=thick_ocean, density=density_ocean, rheology=rheologies.LiquidRheology()),
+    delftide.TidalLayer("Crust              ", thickness=thick_crust, density=density_crust, shear_modulus=p.shearModulus_crust, viscosity=p.viscosity_crust),
     ]
     omega = 4.56e-6
     model = delftide.TidalInterior("Multi-layer Titan", layers)
@@ -87,26 +87,68 @@ def MomentOfInertiaSphere(radius, density):
 def MomentOfInertiaShell(innerRadius, outerRadius, density):
     return 2/5*(shellVolume(innerRadius,outerRadius)*density)*((outerRadius**5-innerRadius**5)/(outerRadius**3-innerRadius**3))
 
-def totalRadius(R_core,R_HPI,R_ocean,R_crust):
-    return R_core + R_HPI + R_ocean + R_crust
+def totalRadius(thick_core,thick_HPI,thick_ocean,thick_crust):
+    return thick_core + thick_HPI + thick_ocean + thick_crust
 
-def bulkdensity(R_core, density_core, R_HPI, density_HPI, R_ocean, density_ocean, R_crust, density_crust):
+def bulkdensity(thick_core, density_core, thick_HPI, density_HPI, thick_ocean, density_ocean, thick_crust, density_crust):
+    R_core = thick_core
+    R_HPI = R_core + thick_HPI
+    R_ocean = R_HPI + thick_ocean
+    R_crust = R_ocean + thick_crust
     return (sphereVolume(R_core)*density_core + shellVolume(R_core,R_HPI) * density_HPI + shellVolume(R_HPI,R_ocean) * density_ocean + shellVolume(R_ocean,R_crust) * density_crust) / sphereVolume(R_crust)
 
-def MomentOfInertiaPlanet(R_core, density_core, R_HPI, density_HPI, R_ocean, density_ocean, R_crust, density_crust):
+def MomentOfInertiaPlanet(thick_core, density_core, thick_HPI, density_HPI, thick_ocean, density_ocean, thick_crust, density_crust):
+    R_core = thick_core
+    R_HPI = R_core + thick_HPI
+    R_ocean = R_HPI + thick_ocean
+    R_crust = R_ocean + thick_crust
     return MomentOfInertiaSphere(R_core, density_core) + MomentOfInertiaShell(R_core,R_HPI,density_HPI) + MomentOfInertiaShell(R_HPI, R_ocean,density_ocean) + MomentOfInertiaShell(R_ocean,R_crust,density_crust)
 
-def MultiLayerSolver():
-    R_core, density_core, density_ocean = sympy.symbols('R_core, density_core, density_ocean')
-    eq1 = sympy.Eq(totalRadius(R_core, p.thick_HPI, p.thick_ocean, p.thick_crust),p.R)
-    eq2 = sympy.Eq(bulkdensity(R_core, density_core, p.R_HPI, p.density_HPI, p.R_ocean, density_ocean, p.R_crust, p.density_crust),p.bulkDensity)
-    eq3 = sympy.Eq(MomentOfInertiaPlanet(R_core, density_core, p.R_HPI, p.density_HPI, p.R_ocean, density_ocean, p.R_crust, p.density_crust),p.MoI_factor*p.R**2*sphereVolume(p.R)*p.bulkDensity)
+def MultiLayerSolver(known_params: dict):
+    #all_symbols = {thick_core, thick_HPI, thick_ocean, thick_crust, density_core, density_HPI, density_ocean, density_crust}
+    thick_core, thick_HPI, thick_ocean, thick_crust = sympy.symbols('thick_core thick_HPI thick_ocean thick_crust')
+    density_core, density_HPI, density_ocean, density_crust = sympy.symbols('density_core density_HPI density_ocean density_crust')
+    eq_radius = sympy.Eq(totalRadius(thick_core, thick_HPI, thick_ocean, thick_crust),p.R)
+    eq_density = sympy.Eq(bulkdensity(thick_core, density_core, thick_HPI, density_HPI, thick_ocean, density_ocean, thick_crust, density_crust),p.bulkDensity)
+    eq_moi = sympy.Eq(MomentOfInertiaPlanet(thick_core, density_core, thick_HPI, density_HPI, thick_ocean, density_ocean, thick_crust, density_crust),p.MoI_factor*p.R**2*sphereVolume(p.R)*p.bulkDensity)
+    equations = [eq_radius, eq_density, eq_moi]
+    eqs = [eq.subs(known_params) for eq in equations]
+    all_symbols = (thick_core, thick_HPI, thick_ocean, thick_crust, density_core, density_HPI, density_ocean, density_crust)
+    missing = [s for s in all_symbols if s not in known_params]
+    if len(missing) != len(eqs):
+        raise ValueError(f"Need exactly {len(eqs)} missing variables, got {len(missing)}")
 
-    solution = sympy.solve((eq1,eq2,eq3),R_core,density_core,density_ocean,dict=True)
+    solution = sympy.solve(eqs,missing,dict=True)
+    if not solution:
+        raise RuntimeError("No solution")
+    sol = solution[0]
+    print(sol)
+    
+    def to_float(val):
+        if val is None:
+            return 0.0
+        if isinstance(val, sympy.Basic):
+            return float(val.evalf())
+        return float(val)
+    
+    result = (
+        to_float(known_params.get(thick_core, sol.get(thick_core, 0))),
+        to_float(known_params.get(thick_HPI, sol.get(thick_HPI, 0))),
+        to_float(known_params.get(thick_ocean, sol.get(thick_ocean, 0))),
+        to_float(known_params.get(thick_crust, sol.get(thick_crust, 0))),
+        to_float(known_params.get(density_core, sol.get(density_core, 0))),
+        to_float(known_params.get(density_HPI, sol.get(density_HPI, 0))),
+        to_float(known_params.get(density_ocean, sol.get(density_ocean, 0))),
+        to_float(known_params.get(density_crust, sol.get(density_crust, 0))),
+    )
+
+    return result
+'''
     R_core = solution[0][R_core]
     density_core = solution[0][density_core]
     density_ocean = solution[0][density_ocean]
     return float(R_core),float(density_core),float(density_ocean)
+'''
 
 def find_slope(array1, array2):
     '''Finds the absolute value of the slope of a curve for each data point.'''

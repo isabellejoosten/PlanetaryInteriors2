@@ -5,10 +5,16 @@ g = 1.352
 MoI_factor = 0.3414                     # no
 
 # Layers thicknesses
-thick_core = 2101000.0                      # m
+thick_core = 2101000                        # m
 thick_HPI = 4000.0                          # m
 thick_ocean = 400000.0                      # m
 thick_crust = 70000.0                       # m
+
+#Density
+density_core = 2566.7                       #kg/m^3
+density_HPI = 1340                      #kg/m^3
+density_ocean = 1094                      #kg/m^3
+density_crust = 925                     #kg/m^3
 
 # Layer radii
 R_core = thick_core                         # m
@@ -16,11 +22,6 @@ R_HPI = R_core + thick_HPI                  # m
 R_ocean = R_HPI + thick_ocean               # m
 R_crust = R  
 
-#Density
-#density_core = 0                       #kg/m^3
-density_HPI = 1340                      #kg/m^3
-#density_ocean = 0                      #kg/m^3
-density_crust = 925                     #kg/m^3
 
 # Rheology
 bulkModulus_core = 200e9                # Pa
