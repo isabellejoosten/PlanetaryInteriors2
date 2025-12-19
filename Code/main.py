@@ -41,4 +41,4 @@ print("Averaged viscosity: ", viscosity_homogeneous, " Pa*s")
 
 
 tide_multilayer = functions.multiLayerTitan()
-titan = delftide.TidalResponse.examples.titan()
+#titan = delftide.TidalResponse.examples.titan()
