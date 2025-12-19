@@ -13,7 +13,7 @@ shearModulus_homogeneous = (p.shearModulus_core*functions.sphereVolume(p.R_core)
 viscosity_homogeneous = (p.viscosity_core*functions.sphereVolume(p.R_core) + p.viscosity_HPI*functions.shellVolume(p.R_core, p.R_HPI) + p.viscosity_ocean*functions.shellVolume(p.R_HPI, p.R_ocean)  + p.viscosity_crust*functions.shellVolume(p.R_ocean, p.R)) / functions.sphereVolume(p.R)
 
 # Computing tides for homogeneous Titan, with various assumptions
-#tide_elastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e")
+tide_elastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e")
 #tide_viscoelastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "v")
 #tide_liquid = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "l")
 
@@ -26,29 +26,18 @@ density_core, density_HPI, density_ocean, density_crust = sympy.symbols('density
 
 # currently only knows if exactly 1 thickness and 2 densities are commented out needs to be rewritten to make it work for any combination of 3
 known = {
-    #thick_core: p.thick_core,
+    thick_core: p.thick_core,
     thick_HPI: p.thick_HPI,
-    thick_ocean: p.thick_ocean,
+    #thick_ocean: p.thick_ocean,
     thick_crust: p.thick_crust,
-    #density_core: p.density_core,
-    density_HPI: p.density_HPI,
+    density_core: p.density_core,
+    #density_HPI: p.density_HPI,
     #density_ocean: p.density_ocean,
     density_crust: p.density_crust
 }
 result = functions.MultiLayerSolver(known)
 print(result)
 
-'''
-print("Radius of the core is ", np.floor(thick_core/10**3) , 'km')
-print("Density of the core is ", np.floor(density_core) , 'kg/m^3')
-print("Density of the ocean is ", np.floor(density_ocean) , 'kg/m^3')
-
-
-
-print("Averaged bulk modulus: ", bulkModulus_homogeneous/1000000000, " GPa")
-print("Averaged shear modulus: ", shearModulus_homogeneous/1000000000, " GPa")
-print("Averaged viscosity: ", viscosity_homogeneous, " Pa*s")
-'''
 
 #tide_elastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e")
 #tide_viscoelastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "v")
@@ -56,4 +45,4 @@ print("Averaged viscosity: ", viscosity_homogeneous, " Pa*s")
 
 
 tide_multilayer = functions.multiLayerTitan(known)
-#titan = delftide.TidalResponse.examples.titan()
+titan = delftide.TidalResponse.examples.titan()

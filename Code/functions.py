@@ -122,7 +122,6 @@ def MultiLayerSolver(known_params: dict):
     if not solution:
         raise RuntimeError("No solution")
     sol = solution[0]
-    print(sol)
     
     def to_float(val):
         if val is None:
