@@ -3,6 +3,8 @@ import matrix_propagator_incompressible_machinery as delftide
 import rheologies
 import parameters as p
 import sympy
+import numpy as np
+import parameters as params
 
 def sphereVolume(radius):
     return 4/3*math.pi*radius**3
@@ -159,3 +161,51 @@ def find_slope(array1, array2):
             derivative = abs((array1[i+1]-array1[i])/(array2[i+1]-array2[i]))
         slope.append(derivative)
     return slope
+
+# ---------------------- LAYER MODEL ADAPTED FROM ASSIGNMENT 1 ------------------------------
+def create_arrays():
+    '''Sets up all arrays needed to perform the integrations for the 1D model. Returns arrays of zeros for mass, pressure, and gravity. Returns an array of evenly spaced radii, and an array of densities based on the core and mantle boundaries specified in params.py.'''
+    r = np.arange(0, params.R + params.delta_r, params.delta_r)
+    rho = np.zeros(len(r))
+    for i in range(len(r)):
+        if r[i] <= params.R_core:
+            rho[i] = params.density_core
+        elif params.R_core < r[i] and r[i] <= params.R_HPI:
+            rho[i] = params.density_HPI
+        elif params.R_HPI < r[i] and r[i] <= params.R_ocean:
+            rho[i] = params.density_ocean
+        else:
+            rho[i] = params.density_crust
+    M = np.zeros(len(r))
+    p = np.zeros(len(r))
+    g = np.zeros(len(r))
+
+    return M, g, p, r, rho
+
+def Pressure(p, rho, g):
+    '''Performs a simple numerical integration for the pressure at each radius increment.'''
+    func = -rho*g
+    p = p - func*params.delta_r
+    return p
+
+def Mass(M, r, rho):
+    '''Performs a simple numerical integration for the planet mass.'''
+    func = 4*np.pi*rho*r**2
+    M += func*params.delta_r
+    return M
+
+def Gravity(G, M, r):
+    '''Returns the gravitational acceleration at radius r.'''
+    if r == 0:
+        g = 0
+    else:
+        g = G*M/r**2
+    return g
+
+def inertia(r, rho, delta_r, M):
+    '''Returns the mass moment of inertia of the planet from an array of densities at each radius increment.'''
+    inertia = 0
+    for i in range(len(r)):
+        inertia += delta_r*rho[i]*r[i]**4
+
+    return inertia*(8*np.pi)/(3*M[-1]*r[-1]*r[-1])
