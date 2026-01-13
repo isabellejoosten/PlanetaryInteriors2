@@ -1,10 +1,11 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 import matrix_propagator_incompressible_machinery as delftide
 import rheologies
 import parameters as p
 import functions
 import sympy
+from matplotlib.gridspec import GridSpec
 
 
 # averages
@@ -13,9 +14,27 @@ shearModulus_homogeneous = (p.shearModulus_core*functions.sphereVolume(p.R_core)
 viscosity_homogeneous = (p.viscosity_core*functions.sphereVolume(p.R_core) + p.viscosity_HPI*functions.shellVolume(p.R_core, p.R_HPI) + p.viscosity_ocean*functions.shellVolume(p.R_HPI, p.R_ocean)  + p.viscosity_crust*functions.shellVolume(p.R_ocean, p.R)) / functions.sphereVolume(p.R)
 
 # Computing tides for homogeneous Titan, with various assumptions
-tide_elastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e")
-#tide_viscoelastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "v")
-#tide_liquid = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "l")
+fig = plt.figure(figsize=(14, 8))
+gs = GridSpec(2, 4, figure=fig)
+axes = [fig.add_subplot(gs[0, 0], sharex=None),
+        fig.add_subplot(gs[0, 1], sharex=None),
+        fig.add_subplot(gs[0, 2], sharex=None),
+        fig.add_subplot(gs[1, 0], sharex=None),
+        fig.add_subplot(gs[1, 1], sharex=None),
+        fig.add_subplot(gs[1, 2], sharex=None)]
+ax_big = fig.add_subplot(gs[:, 3])
+
+tide_e = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e", plot=False)
+tide_v = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "v", plot=False)
+tide_l = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "l", plot=False)
+
+tide_e.plot(axes=axes, ax_big=ax_big, label="Elastic")
+tide_v.plot(axes=axes, ax_big=ax_big, label="Viscoelastic")
+tide_l.plot(axes=axes, ax_big=ax_big, label="Liquid")
+
+ax_big.legend()
+plt.tight_layout()
+plt.show()
 
 # Sensitivity study for the viscoelastic case
 range_shearModulus = np.arange(0.1*shearModulus_homogeneous, 10.1*shearModulus_homogeneous, 0.001*shearModulus_homogeneous)

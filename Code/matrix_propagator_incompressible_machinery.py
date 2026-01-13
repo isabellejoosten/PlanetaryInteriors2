@@ -389,54 +389,37 @@ class TidalResponse:
     # ----------------------
     # Public methods
     # ----------------------
-    def plot(self):
-        """Plot y(r) and H(r) over the planetary interior."""
+    def plot(self, axes=None, ax_big=None, label=None, scale=None):
         r_grid = np.linspace(1e-4, 1, 5000)
         y_r = self.y(r_grid)
         H_r = self.H(r_grid)
-        layer_boundaries = [layer.outer_radius_norm for layer in self.interior_model.layers]
 
-        fig = plt.figure(figsize=(14, 8))
-        gs = GridSpec(2, 4, figure=fig)
-        axes = [fig.add_subplot(gs[0, 0], sharex=None),
-                fig.add_subplot(gs[0, 1], sharex=None),
-                fig.add_subplot(gs[0, 2], sharex=None),
-                fig.add_subplot(gs[1, 0], sharex=None),
-                fig.add_subplot(gs[1, 1], sharex=None),
-                fig.add_subplot(gs[1, 2], sharex=None)]
-        ax_big = fig.add_subplot(gs[:, 3])
+        if scale is None:
+            scale = np.max(np.abs(H_r))
+            exponent = int(np.floor(np.log10(scale)))
+        else:
+            exponent = scale
+
+        H_scaled = H_r / 10**exponent
+
+        ax_big.plot(
+            r_grid,
+            H_scaled,
+            label=fr"{label} ($\times 10^{{{exponent}}}$)"
+        )
+        ax_big.set_ylabel(r"$H / 10^{n}$")
+        ax_big.legend(title="Rheology")     
+        layer_boundaries = [layer.outer_radius_norm for layer in self.interior_model.layers]
 
         titles = [r"$U_2$", r"$V_2$", r"$R_2$", r"$S_2$", r"$\phi_2$", r"$Q_2$"]
         ylabels = [r"$y_1$", r"$y_2$", r"$y_3$", r"$y_4$", r"$y_5$", r"$y_6$"]
 
         for i, ax in enumerate(axes):
-            ax.plot(r_grid, y_r[i, :].real, label="real")
-            ax.plot(r_grid, y_r[i, :].imag, linestyle="--", label="imag")
-            ax.set_xlabel(r"$r / R$")
-            ax.set_ylabel(ylabels[i])
-            ax.set_title(titles[i])
-            ax.grid(True, linestyle=":", alpha=0.5)
+            ax.plot(r_grid, y_r[i, :].real, label=f"{label} real")
+            ax.plot(r_grid, y_r[i, :].imag, linestyle="--", label=f"{label} imag")
+
             for boundary in layer_boundaries:
-                ax.axvline(boundary, color='red', linestyle=':', alpha=0.7)
-            ax.legend(loc="best", fontsize=8)
-
-        ax_big.plot(r_grid, H_r, color="black")
-        ax_big.set_xlabel(r"$r / R$")
-        ax_big.set_ylabel(r"$H$")
-        ax_big.set_title(r"Tidal Dissipation Function $H(r)$")
-        ax_big.grid(True, linestyle=":", alpha=0.5)
-        for boundary in layer_boundaries:
-            ax_big.axvline(boundary, color='red', linestyle=':', alpha=0.7)
-
-        for ax in axes:
-            ax.set_xlim(0, 1)
-        ax_big.set_xlim(0, 1)
-
-        # Add supertitle with the interior model name
-        fig.suptitle(f"Tidal Response for {self.interior_model.name}", fontsize=16, y=0.98)
-
-        plt.tight_layout()
-        plt.show()
+                ax.axvline(boundary, color="red", linestyle=":", alpha=0.7)
 
     def validate_dissipation(self):
         """Compare integrated H(r) against k2 imaginary part."""
@@ -480,7 +463,7 @@ class TidalResponse:
         ax2.set_yscale('log')
         plt.title(f"Tidal Dissipation Convergence for {self.interior_model.name}")
         plt.tight_layout()
-        plt.show()
+        #plt.show()
 
     # ----------------------
     # Static methods

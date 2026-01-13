@@ -5,6 +5,7 @@ import parameters as p
 import sympy
 import numpy as np
 import parameters as params
+import matplotlib.pyplot as plt
 
 def sphereVolume(radius):
     return 4/3*math.pi*radius**3
@@ -38,22 +39,33 @@ def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type, plot=Tr
         omega = 4.56e-6
         k2_verification = k2_analytical(shearModulus, bulkDensity, p.g, p.R, viscosity, omega)
         h2_verification = h2_analytical(shearModulus, bulkDensity, p.g, p.R, viscosity, omega)
+        model = delftide.TidalInterior(modelName, layers)
+        tide = delftide.TidalResponse(model, omega)
+        if plot==True:
+            tide.plot()
     elif type == "e":
         modelName = "Single-layer Titan, elastic"
         layers = [delftide.TidalLayer(modelName, thickness=radius, density=bulkDensity, shear_modulus=shearModulus, viscosity=1e-20)]
         omega = 4.56e-6
         k2_verification = k2_analytical(shearModulus, bulkDensity, p.g, p.R, 1e-20, omega)
-        h2_verification = h2_analytical(shearModulus, bulkDensity, p.g, p.R, 1e-20, omega)
+        h2_verification = h2_analytical(shearModulus, bulkDensity, p.g, p.R, 1e-20, omega)        
+        model = delftide.TidalInterior(modelName, layers)
+        tide = delftide.TidalResponse(model, omega)
+        if plot==True:
+            tide.plot()
     elif type == "l":
         modelName = "Single-layer Titan, liquid"
         layers = [delftide.TidalLayer(modelName, thickness=radius, density=bulkDensity, shear_modulus=shearModulus, viscosity=viscosity)]
         omega = 0.00000000000000000000001
         k2_verification = k2_analytical(shearModulus, bulkDensity, p.g, p.R, viscosity, omega)
         h2_verification = h2_analytical(shearModulus, bulkDensity, p.g, p.R, viscosity, omega)
-    model = delftide.TidalInterior(modelName, layers)
-    tide = delftide.TidalResponse(model, omega)
-    if plot==True:
-        tide.plot()
+        model = delftide.TidalInterior(modelName, layers)
+        tide = delftide.TidalResponse(model, omega)
+        if plot==True:
+            tide.plot()
+    return tide
+       
+    
 
     print(modelName)
     print(tide.k2)
