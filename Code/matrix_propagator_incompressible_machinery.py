@@ -13,6 +13,7 @@ from matplotlib.gridspec import GridSpec
 import time
 import numpy as np
 from numpy import pi, logspace, zeros
+from matplotlib.ticker import ScalarFormatter
 
 
 class TidalLayer:
@@ -407,8 +408,7 @@ class TidalResponse:
             H_scaled,
             label=fr"{label} ($\times 10^{{{exponent}}}$)"
         )
-        ax_big.set_ylabel(r"$H / 10^{n}$")
-        ax_big.legend(title="Rheology")     
+        ax_big.set_ylabel(r"$H / 10^{n}$")  
         layer_boundaries = [layer.outer_radius_norm for layer in self.interior_model.layers]
 
         titles = [r"$U_2$", r"$V_2$", r"$R_2$", r"$S_2$", r"$\phi_2$", r"$Q_2$"]
@@ -420,6 +420,54 @@ class TidalResponse:
 
             for boundary in layer_boundaries:
                 ax.axvline(boundary, color="red", linestyle=":", alpha=0.7)
+
+    def plot_H_only(self, ax=None, label=None):
+        r_grid = np.linspace(1e-4, 1, 5000)
+        H_r = self.H(r_grid)
+        layer_boundaries = [layer.outer_radius_norm for layer in self.interior_model.layers]
+
+        # Create axis if needed
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(6, 6))
+        else:
+            fig = ax.figure
+
+        # --- scaling logic ---
+        max_val = np.max(np.abs(H_r))
+        if max_val == 0:
+            exponent = 0
+        else:
+            exponent = int(np.floor(np.log10(max_val)))
+
+        H_scaled = H_r / 10**exponent
+
+        # Plot scaled curve
+        ax.plot(
+            r_grid,
+            H_scaled,
+            label=fr"{label} ($\times 10^{{{exponent}}}$)" if label else None
+        )
+
+        # Layer boundaries
+        for boundary in layer_boundaries:
+            ax.axvline(boundary, color="red", linestyle=":", alpha=0.7)
+
+        # Axis formatting
+        ax.set_xlim(0, 1)
+        ax.set_xlabel(r"$r / R$")
+        ax.set_ylabel(r"$H$ (scaled)")
+        ax.set_title(r"Tidal Dissipation Function $H(r)$")
+        ax.grid(True, linestyle=":", alpha=0.5)
+
+        # Disable scientific notation on axis
+        ax.yaxis.set_major_formatter(ScalarFormatter())
+        ax.ticklabel_format(style="plain", axis="y")
+
+        if label:
+            ax.legend(title="Rheology")
+
+        return fig, ax
+
 
     def validate_dissipation(self):
         """Compare integrated H(r) against k2 imaginary part."""

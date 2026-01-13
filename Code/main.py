@@ -32,7 +32,17 @@ tide_e.plot(axes=axes, ax_big=ax_big, label="Elastic")
 tide_v.plot(axes=axes, ax_big=ax_big, label="Viscoelastic")
 tide_l.plot(axes=axes, ax_big=ax_big, label="Liquid")
 
-ax_big.legend()
+ax_big.set_title(r"Tidal Dissipation Function $H(r)$", fontsize=14)
+ax_big.legend(title="Rheology")
+plt.tight_layout()
+plt.show()
+
+fig, ax = None, None
+
+fig, ax = tide_e.plot_H_only(ax=ax, label="Elastic")
+fig, ax = tide_v.plot_H_only(ax=ax, label="Viscoelastic")
+fig, ax = tide_l.plot_H_only(ax=ax, label="Liquid")
+
 plt.tight_layout()
 plt.show()
 
