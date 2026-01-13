@@ -455,7 +455,7 @@ class TidalResponse:
         # Axis formatting
         ax.set_xlim(0, 1)
         ax.set_xlabel(r"$r / R$")
-        ax.set_ylabel(r"$H$ (scaled)")
+        ax.set_ylabel(r"$H / 10^{n}$")
         ax.set_title(r"Tidal Dissipation Function $H(r)$")
         ax.grid(True, linestyle=":", alpha=0.5)
 
