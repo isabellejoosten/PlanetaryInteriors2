@@ -209,3 +209,7 @@ def inertia(r, rho, delta_r, M):
         inertia += delta_r*rho[i]*r[i]**4
 
     return inertia*(8*np.pi)/(3*M[-1]*r[-1]*r[-1])
+
+def precision_round(number, digits=3):
+    power = "{:e}".format(number).split('e')[1]
+    return round(number, -(int(power) - digits))
