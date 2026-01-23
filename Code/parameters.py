@@ -8,15 +8,15 @@ M_observed = 1.345e23                       # kg
 gravConstant = 6.67430e-11                  # m3/kg/s2
 
 # Layers thicknesses
-thick_core = 2101000                        # m
+thick_core = 2100000                        # m
 thick_HPI = 150000.0                        # m
-thick_ocean = 400000.0                      # m
+thick_ocean = 250000.0                      # m
 thick_crust = 70000.0                       # m
 
 #Density
-density_core = 2566.7                       #kg/m^3
+density_core = 2530                       #kg/m^3
 density_HPI = 1340                          #kg/m^3
-density_ocean = 1094                        #kg/m^3
+density_ocean = 1100                        #kg/m^3
 density_crust = 925                         #kg/m^3
 
 # Layer radii

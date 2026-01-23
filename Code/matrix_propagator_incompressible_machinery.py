@@ -433,7 +433,7 @@ class TidalResponse:
         ax_big.set_xlim(0, 1)
 
         # Add supertitle with the interior model name
-        fig.suptitle(f"Tidal Response for {self.interior_model.name}", fontsize=16, y=0.98)
+        #fig.suptitle(f"Tidal Response for {self.interior_model.name}", fontsize=16, y=0.98)
 
         plt.tight_layout()
         plt.show()
