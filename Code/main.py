@@ -13,9 +13,9 @@ shearModulus_homogeneous = (p.shearModulus_core*functions.sphereVolume(p.R_core)
 viscosity_homogeneous = (p.viscosity_core*functions.sphereVolume(p.R_core) + p.viscosity_HPI*functions.shellVolume(p.R_core, p.R_HPI) + p.viscosity_ocean*functions.shellVolume(p.R_HPI, p.R_ocean)  + p.viscosity_crust*functions.shellVolume(p.R_ocean, p.R)) / functions.sphereVolume(p.R)
 
 # Computing tides for homogeneous Titan, with various assumptions
-#tide_elastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e")
-#tide_viscoelastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "v")
-#tide_liquid = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "l")
+tide_elastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e")
+tide_viscoelastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "v")
+tide_liquid = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "l")
 
 # Sensitivity study for the viscoelastic case
 range_shearModulus = np.arange(0.1*shearModulus_homogeneous, 10.1*shearModulus_homogeneous, 0.001*shearModulus_homogeneous)
@@ -28,15 +28,15 @@ density_core, density_HPI, density_ocean, density_crust = sympy.symbols('density
 known = {
     thick_core: p.thick_core,
     thick_HPI: p.thick_HPI,
-    thick_ocean: p.thick_ocean,
+    #thick_ocean: p.thick_ocean,
     thick_crust: p.thick_crust,
     density_core: p.density_core,
-    density_HPI: p.density_HPI,
-    density_ocean: p.density_ocean,
+    #density_HPI: p.density_HPI,
+    #density_ocean: p.density_ocean,
     density_crust: p.density_crust
 }
-#result = functions.MultiLayerSolver(known)
-#print(result)
+result = functions.MultiLayerSolver(known)
+print(result)
 
 
 #tide_elastic = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "e")
