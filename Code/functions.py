@@ -235,7 +235,7 @@ def _build_fast_solver():
     unknowns = (
         thick_ocean_sym,
         density_HPI_sym,
-        density_ocean_sym
+        density_core_sym
     )
 
     sol = sympy.solve(eqs, unknowns, dict=True)
@@ -247,7 +247,7 @@ def _build_fast_solver():
     return sympy.lambdify(
         (
             thick_core_sym,
-            density_core_sym,
+            density_ocean_sym,
             thick_HPI_sym,
             thick_crust_sym,
             density_crust_sym
@@ -255,25 +255,25 @@ def _build_fast_solver():
         (
             sol[thick_ocean_sym],
             sol[density_HPI_sym],
-            sol[density_ocean_sym]
+            sol[density_core_sym]
         ),
         "numpy"
     )
 
 FAST_MULTILAYER_SOLVER = _build_fast_solver()
 
-def create_titan_model(tc, dc, thpi=p.thick_HPI, tcr=p.thick_crust, dcr=p.density_crust):
+def create_titan_model(tc, do, thpi=p.thick_HPI, tcr=p.thick_crust, dcr=p.density_crust):
     """Given core thickness & density and fixed HPI & crust, return delftide model."""
     
     # Solve for the remaining unknowns
-    to, dhpi, do_ = FAST_MULTILAYER_SOLVER(tc, dc, thpi, tcr, dcr)
+    to, dhpi, dc = FAST_MULTILAYER_SOLVER(tc, do, thpi, tcr, dcr)
 
     layers = [
         delftide.TidalLayer("Core", thickness=tc, density=dc,
                             shear_modulus=p.shearModulus_core, viscosity=p.viscosity_core),
         delftide.TidalLayer("High Pressure Ice", thickness=dhpi, density=p.density_HPI,
                             shear_modulus=p.shearModulus_HPI, viscosity=p.viscosity_HPI),
-        delftide.TidalLayer("Subsurface Ocean", thickness=to, density=p.density_ocean,
+        delftide.TidalLayer("Subsurface Ocean", thickness=to, density=do,
                             rheology=rheologies.LiquidRheology()),
         delftide.TidalLayer("Crust", thickness=tcr, density=dcr,
                             shear_modulus=p.shearModulus_crust, viscosity=p.viscosity_crust)

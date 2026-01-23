@@ -18,25 +18,20 @@ viscosity_homogeneous = (p.viscosity_core*functions.sphereVolume(p.R_core) + p.v
 #tide_liquid = functions.singleLayerTitan(p.R, p.bulkDensity, shearModulus_homogeneous, viscosity_homogeneous, "l")
 
 # Sensitivity study for the viscoelastic case
-range_shearModulus = np.arange(0.1*shearModulus_homogeneous, 10.1*shearModulus_homogeneous, 0.001*shearModulus_homogeneous)
-range_viscosity = np.arange(10.0e-5*viscosity_homogeneous, 10.0e5*viscosity_homogeneous, 100.0*viscosity_homogeneous)
+# Define ranges
 
-from functions import (
-    thick_core_sym, thick_HPI_sym, thick_ocean_sym, thick_crust_sym,
-    density_core_sym, density_HPI_sym, density_ocean_sym, density_crust_sym
-)
-
-thick_core_range = np.linspace(0.75*p.thick_core, 1.25*p.thick_core, 100)
-density_core_range = np.linspace(0.5*p.density_core,1.5*p.density_core, 100)
+thick_core_range = np.linspace(0.75*p.thick_core, 1.25*p.thick_core, 50)  # km
+density_ocean_range = np.linspace(0.5*p.density_ocean, 1.5*p.density_ocean, 50)  # kg/m³
 
 solutions = []
 
+# Solve for multi-layer parameters
 for tc in thick_core_range:
-    for dc in density_core_range:
+    for do in density_ocean_range:
         try:
-            to, dhpi, do_ = functions.FAST_MULTILAYER_SOLVER(
+            to, dhpi, dc = functions.FAST_MULTILAYER_SOLVER(
                 tc,
-                dc,
+                do,
                 p.thick_HPI,
                 p.thick_crust,
                 p.density_crust
@@ -44,50 +39,72 @@ for tc in thick_core_range:
         except FloatingPointError:
             continue
 
-        if to <= 0 or not np.isfinite(to) or not np.isfinite(do_):
+        if to <= 0:
             continue
 
-        solutions.append((tc, dc, to, do_))
+        solutions.append((tc, do, to))
 
 solutions = np.array(solutions)
-if len(solutions) == 0:
-    raise RuntimeError("No valid solutions found!")
+tc_arr = solutions[:, 0] / 1e3   # convert m → km
+do_arr = solutions[:, 1]
+to_arr = solutions[:, 2] / 1e3   # ocean thickness km
 
-tc_arr = solutions[:, 0] / 1e3    # km, optional
-dc_arr = solutions[:, 1]          # kg/m³
-to_arr = solutions[:, 2] / 1e3    # km, optional
-do_arr = solutions[:, 3]          # ocean density (kg/m³)
-
-if len(solutions) == 0:
-    raise RuntimeError("No valid solutions found")
-
-
+# Compute Love numbers
 k2_arr = []
-h2_arr = []
 
-for tc, dc, to, do_ in solutions:
+for tc, do, to in solutions:
     try:
-        tide = functions.create_titan_model(tc, dc)
+        tide = functions.create_titan_model(tc, do)
     except FloatingPointError:
         k2_arr.append(np.nan)
-        h2_arr.append(np.nan)
         continue
-    
-    k2_arr.append(tide.k2)
-    h2_arr.append(tide.h2)
-
+    k2_arr.append(tide.k2.real)
 k2_arr = np.array(k2_arr)
-h2_arr = np.array(h2_arr)
+k2_arr = k2_arr.flatten()
+
+# Define k2 range
+k2_min_1 = 0.589 - 0.150
+k2_max_1 = 0.589 + 0.150
+
+k2_min_2 = 0.637 - 0.224
+k2_max_2 = 0.637 + 0.224
 
 
+# Filter solutions
+mask = (k2_arr >= k2_min_1) & (k2_arr <= k2_max_1)
+tc_filtered_1 = tc_arr[mask]
+do_filtered_1 = do_arr[mask]
+k2_filtered_1 = k2_arr[mask]
+
+# Filter 2
+mask = (k2_arr >= k2_min_2) & (k2_arr <= k2_max_2)
+
+tc_filtered_2 = tc_arr[mask]
+do_filtered_2 = do_arr[mask]
+k2_filtered_2 = k2_arr[mask]
+
+
+# Plot only filtered results of first observer k2
 plt.figure(figsize=(8,6))
-sc = plt.scatter(do_arr, dc_arr, c=k2_arr.real, cmap="viridis", s=20)
-plt.xlabel("Ocean density (kg/m³)")
-plt.ylabel("Core density (kg/m³)")
-plt.title("Titan k2 vs Core Structure (ocean density on x-axis)")
+sc = plt.scatter(tc_filtered_1, do_filtered_1, c=k2_filtered_1, cmap="viridis", s=30)
+plt.xlabel("Core thickness (km)")
+plt.ylabel("Ocean density (kg/m³)")
+#plt.title(f"Titan k2 = 0.589 +/- 0.150")
 plt.colorbar(sc, label="k2 (real part)")
 plt.tight_layout()
 plt.show()
+
+# Plot second observerd k2
+plt.figure(figsize=(8,6))
+sc = plt.scatter(tc_filtered_2, do_filtered_2, c=k2_filtered_2, cmap="viridis", s=30)
+plt.xlabel("Core thickness (km)")
+plt.ylabel("Ocean density (kg/m³)")
+#plt.title(f"Titan k2 filtered in range 0.637 +/- 0.224")
+plt.colorbar(sc, label="k2 (real part)")
+plt.tight_layout()
+plt.show()
+
+
 
 
 
