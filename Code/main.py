@@ -20,8 +20,8 @@ viscosity_homogeneous = (p.viscosity_core*functions.sphereVolume(p.R_core) + p.v
 # Sensitivity study for the viscoelastic case
 # Define ranges
 
-thick_core_range = np.linspace(0.75*p.thick_core, 1.25*p.thick_core, 50)  # km
-density_ocean_range = np.linspace(0.5*p.density_ocean, 1.5*p.density_ocean, 50)  # kg/m³
+thick_core_range = np.linspace(0.75*p.thick_core, 1.25*p.thick_core, 500)  # km
+density_ocean_range = np.linspace(0.5*p.density_ocean, 1.5*p.density_ocean, 500)  # kg/m³
 
 solutions = []
 
@@ -69,6 +69,9 @@ k2_max_1 = 0.589 + 0.150
 k2_min_2 = 0.637 - 0.224
 k2_max_2 = 0.637 + 0.224
 
+k2_min_3 = 0.375 - 0.06
+k2_max_3 = 0.375 + 0.06
+
 
 # Filter solutions
 mask = (k2_arr >= k2_min_1) & (k2_arr <= k2_max_1)
@@ -82,6 +85,13 @@ mask = (k2_arr >= k2_min_2) & (k2_arr <= k2_max_2)
 tc_filtered_2 = tc_arr[mask]
 do_filtered_2 = do_arr[mask]
 k2_filtered_2 = k2_arr[mask]
+
+# Filter 3
+mask = (k2_arr >= k2_min_3) & (k2_arr <= k2_max_3)
+
+tc_filtered_3 = tc_arr[mask]
+do_filtered_3 = do_arr[mask]
+k2_filtered_3 = k2_arr[mask]
 
 
 # Plot only filtered results of first observer k2
@@ -103,6 +113,18 @@ plt.ylabel("Ocean density (kg/m³)")
 plt.colorbar(sc, label="k2 (real part)")
 plt.tight_layout()
 plt.show()
+
+# Plot third observerd k2
+plt.figure(figsize=(8,6))
+sc = plt.scatter(tc_filtered_3, do_filtered_3, c=k2_filtered_3, cmap="viridis", s=30)
+plt.xlabel("Core thickness (km)")
+plt.ylabel("Ocean density (kg/m³)")
+#plt.title(f"Titan k2 filtered in range 0.375 +/- 0.06")
+plt.colorbar(sc, label="k2 (real part)")
+plt.tight_layout()
+plt.show()
+
+
 
 
 
