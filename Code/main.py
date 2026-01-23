@@ -33,9 +33,8 @@ solutions = []
 
 for tc in thick_core_range:
     for dc in density_core_range:
-
         try:
-            to, dhpi, do = functions.FAST_MULTILAYER_SOLVER(
+            to, dhpi, do_ = functions.FAST_MULTILAYER_SOLVER(
                 tc,
                 dc,
                 p.thick_HPI,
@@ -45,44 +44,48 @@ for tc in thick_core_range:
         except FloatingPointError:
             continue
 
-        if not np.isfinite(to):
-            continue
-        if to <= 0:
+        if to <= 0 or not np.isfinite(to) or not np.isfinite(do_):
             continue
 
-        solutions.append((tc, dc, to))
+        solutions.append((tc, dc, to, do_))
 
 solutions = np.array(solutions)
+if len(solutions) == 0:
+    raise RuntimeError("No valid solutions found!")
 
-tc_arr   = solutions[:, 0] / 1e3   # km
-dc_arr   = solutions[:, 1]
-to_arr   = solutions[:, 2] / 1e3   # km
+tc_arr = solutions[:, 0] / 1e3    # km, optional
+dc_arr = solutions[:, 1]          # kg/m³
+to_arr = solutions[:, 2] / 1e3    # km, optional
+do_arr = solutions[:, 3]          # ocean density (kg/m³)
 
 if len(solutions) == 0:
     raise RuntimeError("No valid solutions found")
 
-tc_test = p.thick_core
-dc_test = p.density_core
 
-to_fast, dhpi_fast, do_fast = functions.FAST_MULTILAYER_SOLVER(
-    tc_test, dc_test, p.thick_HPI, p.thick_crust, p.density_crust
-)
+k2_arr = []
+h2_arr = []
 
-print("Ocean thickness (fast):", to_fast)
+for tc, dc, to, do_ in solutions:
+    try:
+        tide = functions.create_titan_model(tc, dc)
+    except FloatingPointError:
+        k2_arr.append(np.nan)
+        h2_arr.append(np.nan)
+        continue
+    
+    k2_arr.append(tide.k2)
+    h2_arr.append(tide.h2)
 
-plt.figure(figsize=(7, 6))
-sc = plt.scatter(
-    tc_arr,
-    dc_arr,
-    c=to_arr,
-    cmap="viridis",
-    s=15
-)
+k2_arr = np.array(k2_arr)
+h2_arr = np.array(h2_arr)
 
-plt.xlabel("Core thickness (km)")
-plt.ylabel("Core density (kg m$^{-3}$)")
-plt.colorbar(sc, label="Ocean thickness (km)")
-plt.title("Titan interior solutions")
+
+plt.figure(figsize=(8,6))
+sc = plt.scatter(do_arr, dc_arr, c=k2_arr.real, cmap="viridis", s=20)
+plt.xlabel("Ocean density (kg/m³)")
+plt.ylabel("Core density (kg/m³)")
+plt.title("Titan k2 vs Core Structure (ocean density on x-axis)")
+plt.colorbar(sc, label="k2 (real part)")
 plt.tight_layout()
 plt.show()
 

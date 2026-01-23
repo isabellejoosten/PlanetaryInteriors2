@@ -82,7 +82,7 @@ def singleLayerTitan(radius, bulkDensity, shearModulus, viscosity, type, plot=Tr
     print("h2 error (imaginary part): ", round(h2errorIm*100, 5), "%")
     
     return tide
-
+'''
 def multiLayerTitan(known):
     thick_core, thick_HPI, thick_ocean, thick_crust, density_core, density_HPI, density_ocean, density_crust = MultiLayerSolver(known)
     layers = [
@@ -97,6 +97,9 @@ def multiLayerTitan(known):
     tide.plot()
     print(tide)
     return model, tide
+'''
+
+
 
 def MomentOfInertiaSphere(radius, density):
     return (8*np.pi/15) * density * radius**5
@@ -121,6 +124,7 @@ def MomentOfInertiaPlanet(thick_core, density_core, thick_HPI, density_HPI, thic
     R_crust = R_ocean + thick_crust
     return MomentOfInertiaSphere(R_core, density_core) + MomentOfInertiaShell(R_core,R_HPI,density_HPI) + MomentOfInertiaShell(R_HPI, R_ocean,density_ocean) + MomentOfInertiaShell(R_ocean,R_crust,density_crust)
 
+'''
 def MultiLayerSolver(known_params: dict):
     # Thickness symbols
     thick_core_sym, thick_HPI_sym, thick_ocean_sym, thick_crust_sym = sympy.symbols(
@@ -202,7 +206,7 @@ def MultiLayerSolver(known_params: dict):
         val(density_ocean_sym),
         val(density_crust_sym),
     )
-
+'''
 
 def _build_fast_solver():
     eqs = [
@@ -258,6 +262,28 @@ def _build_fast_solver():
 
 FAST_MULTILAYER_SOLVER = _build_fast_solver()
 
+def create_titan_model(tc, dc, thpi=p.thick_HPI, tcr=p.thick_crust, dcr=p.density_crust):
+    """Given core thickness & density and fixed HPI & crust, return delftide model."""
+    
+    # Solve for the remaining unknowns
+    to, dhpi, do_ = FAST_MULTILAYER_SOLVER(tc, dc, thpi, tcr, dcr)
+
+    layers = [
+        delftide.TidalLayer("Core", thickness=tc, density=dc,
+                            shear_modulus=p.shearModulus_core, viscosity=p.viscosity_core),
+        delftide.TidalLayer("High Pressure Ice", thickness=dhpi, density=p.density_HPI,
+                            shear_modulus=p.shearModulus_HPI, viscosity=p.viscosity_HPI),
+        delftide.TidalLayer("Subsurface Ocean", thickness=to, density=p.density_ocean,
+                            rheology=rheologies.LiquidRheology()),
+        delftide.TidalLayer("Crust", thickness=tcr, density=dcr,
+                            shear_modulus=p.shearModulus_crust, viscosity=p.viscosity_crust)
+    ]
+    
+    omega = 4.56e-6  # Titan's orbital frequency
+    model = delftide.TidalInterior("Titan multi-layer", layers)
+    tide = delftide.TidalResponse(model, omega)
+    
+    return tide
 
 def find_slope(array1, array2):
     '''Finds the absolute value of the slope of a curve for each data point.'''
