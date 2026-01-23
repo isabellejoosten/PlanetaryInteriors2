@@ -6,6 +6,21 @@ import sympy
 import numpy as np
 import parameters as params
 
+# Thickness symbols
+thick_core_sym, thick_HPI_sym, thick_ocean_sym, thick_crust_sym = sympy.symbols(
+    'thick_core thick_HPI thick_ocean thick_crust', real=True
+)
+# Density symbols
+density_core_sym, density_HPI_sym, density_ocean_sym, density_crust_sym = sympy.symbols(
+    'density_core density_HPI density_ocean density_crust', real=True
+)
+ALL_SYMBOLS = (
+    thick_core_sym, thick_HPI_sym, thick_ocean_sym, thick_crust_sym,
+    density_core_sym, density_HPI_sym, density_ocean_sym, density_crust_sym
+)
+
+
+
 def sphereVolume(radius):
     return 4/3*math.pi*radius**3
 
@@ -84,10 +99,10 @@ def multiLayerTitan(known):
     return model, tide
 
 def MomentOfInertiaSphere(radius, density):
-    return 2/5*sphereVolume(radius)*density*radius**2
+    return (8*np.pi/15) * density * radius**5
 
 def MomentOfInertiaShell(innerRadius, outerRadius, density):
-    return 2/5*(shellVolume(innerRadius,outerRadius)*density)*((outerRadius**5-innerRadius**5)/(outerRadius**3-innerRadius**3))
+    return (8*np.pi/15) * density * (outerRadius**5 - innerRadius**5)
 
 def totalRadius(thick_core,thick_HPI,thick_ocean,thick_crust):
     return thick_core + thick_HPI + thick_ocean + thick_crust
@@ -107,49 +122,142 @@ def MomentOfInertiaPlanet(thick_core, density_core, thick_HPI, density_HPI, thic
     return MomentOfInertiaSphere(R_core, density_core) + MomentOfInertiaShell(R_core,R_HPI,density_HPI) + MomentOfInertiaShell(R_HPI, R_ocean,density_ocean) + MomentOfInertiaShell(R_ocean,R_crust,density_crust)
 
 def MultiLayerSolver(known_params: dict):
-    #all_symbols = {thick_core, thick_HPI, thick_ocean, thick_crust, density_core, density_HPI, density_ocean, density_crust}
-    thick_core, thick_HPI, thick_ocean, thick_crust = sympy.symbols('thick_core thick_HPI thick_ocean thick_crust')
-    density_core, density_HPI, density_ocean, density_crust = sympy.symbols('density_core density_HPI density_ocean density_crust')
-    eq_radius = sympy.Eq(totalRadius(thick_core, thick_HPI, thick_ocean, thick_crust),p.R)
-    eq_density = sympy.Eq(bulkdensity(thick_core, density_core, thick_HPI, density_HPI, thick_ocean, density_ocean, thick_crust, density_crust),p.bulkDensity)
-    eq_moi = sympy.Eq(MomentOfInertiaPlanet(thick_core, density_core, thick_HPI, density_HPI, thick_ocean, density_ocean, thick_crust, density_crust),p.MoI_factor*p.R**2*sphereVolume(p.R)*p.bulkDensity)
-    equations = [eq_radius, eq_density, eq_moi]
-    eqs = [eq.subs(known_params) for eq in equations]
-    all_symbols = (thick_core, thick_HPI, thick_ocean, thick_crust, density_core, density_HPI, density_ocean, density_crust)
-    missing = [s for s in all_symbols if s not in known_params]
-    if len(missing) != len(eqs):
-        raise ValueError(f"Need exactly {len(eqs)} missing variables, got {len(missing)}")
-
-    solution = sympy.solve(eqs,missing,dict=True)
-    if not solution:
-        raise RuntimeError("No solution")
-    sol = solution[0]
-    
-    def to_float(val):
-        if val is None:
-            return 0.0
-        if isinstance(val, sympy.Basic):
-            return float(val.evalf())
-        return float(val)
-    
-    result = (
-        to_float(known_params.get(thick_core, sol.get(thick_core, 0))),
-        to_float(known_params.get(thick_HPI, sol.get(thick_HPI, 0))),
-        to_float(known_params.get(thick_ocean, sol.get(thick_ocean, 0))),
-        to_float(known_params.get(thick_crust, sol.get(thick_crust, 0))),
-        to_float(known_params.get(density_core, sol.get(density_core, 0))),
-        to_float(known_params.get(density_HPI, sol.get(density_HPI, 0))),
-        to_float(known_params.get(density_ocean, sol.get(density_ocean, 0))),
-        to_float(known_params.get(density_crust, sol.get(density_crust, 0))),
+    # Thickness symbols
+    thick_core_sym, thick_HPI_sym, thick_ocean_sym, thick_crust_sym = sympy.symbols(
+        'thick_core thick_HPI thick_ocean thick_crust', real=True
+    )
+    # Density symbols
+    density_core_sym, density_HPI_sym, density_ocean_sym, density_crust_sym = sympy.symbols(
+        'density_core density_HPI density_ocean density_crust', real=True
+    )
+    ALL_SYMBOLS = (
+        thick_core_sym, thick_HPI_sym, thick_ocean_sym, thick_crust_sym,
+        density_core_sym, density_HPI_sym, density_ocean_sym, density_crust_sym
+    )
+    # ---------------- Equations ----------------
+    eq_radius = sympy.Eq(
+        totalRadius(
+            thick_core_sym,
+            thick_HPI_sym,
+            thick_ocean_sym,
+            thick_crust_sym
+        ),
+        p.R
     )
 
-    return result
-'''
-    R_core = solution[0][R_core]
-    density_core = solution[0][density_core]
-    density_ocean = solution[0][density_ocean]
-    return float(R_core),float(density_core),float(density_ocean)
-'''
+    eq_density = sympy.Eq(
+        bulkdensity(
+            thick_core_sym, density_core_sym,
+            thick_HPI_sym, density_HPI_sym,
+            thick_ocean_sym, density_ocean_sym,
+            thick_crust_sym, density_crust_sym
+        ),
+        p.bulkDensity
+    )
+
+    eq_moi = sympy.Eq(
+        MomentOfInertiaPlanet(
+            thick_core_sym, density_core_sym,
+            thick_HPI_sym, density_HPI_sym,
+            thick_ocean_sym, density_ocean_sym,
+            thick_crust_sym, density_crust_sym
+        ),
+        p.MoI_factor * p.R**2 * sphereVolume(p.R) * p.bulkDensity
+    )
+
+    equations = [eq_radius, eq_density, eq_moi]
+    equations = [eq.subs(known_params) for eq in equations]
+    missing = [s for s in ALL_SYMBOLS if s not in known_params]
+
+    if len(missing) != 3:
+        raise ValueError(
+            f"MultiLayerSolver needs exactly 3 unknowns, got {len(missing)}"
+        )
+
+    solutions = sympy.solve(
+        equations,
+        missing,
+        dict=True,
+        simplify=True
+    )
+
+    if not solutions:
+        raise RuntimeError("No solution found")
+    sol = solutions[0]
+
+    def val(sym):
+        if sym in known_params:
+            return float(known_params[sym])
+        if sym in sol:
+            return float(sol[sym].evalf())
+        return 0.0
+
+    return (
+        val(thick_core_sym),
+        val(thick_HPI_sym),
+        val(thick_ocean_sym),
+        val(thick_crust_sym),
+        val(density_core_sym),
+        val(density_HPI_sym),
+        val(density_ocean_sym),
+        val(density_crust_sym),
+    )
+
+
+def _build_fast_solver():
+    eqs = [
+        totalRadius(
+            thick_core_sym,
+            thick_HPI_sym,
+            thick_ocean_sym,
+            thick_crust_sym
+        ) - p.R,
+
+        bulkdensity(
+            thick_core_sym, density_core_sym,
+            thick_HPI_sym, density_HPI_sym,
+            thick_ocean_sym, density_ocean_sym,
+            thick_crust_sym, density_crust_sym
+        ) - p.bulkDensity,
+
+        MomentOfInertiaPlanet(
+            thick_core_sym, density_core_sym,
+            thick_HPI_sym, density_HPI_sym,
+            thick_ocean_sym, density_ocean_sym,
+            thick_crust_sym, density_crust_sym
+        ) - p.MoI_factor * p.R**2 * sphereVolume(p.R) * p.bulkDensity
+    ]
+
+    unknowns = (
+        thick_ocean_sym,
+        density_HPI_sym,
+        density_ocean_sym
+    )
+
+    sol = sympy.solve(eqs, unknowns, dict=True)
+    if not sol:
+        raise RuntimeError("Symbolic multilayer solve failed")
+
+    sol = sol[0]
+
+    return sympy.lambdify(
+        (
+            thick_core_sym,
+            density_core_sym,
+            thick_HPI_sym,
+            thick_crust_sym,
+            density_crust_sym
+        ),
+        (
+            sol[thick_ocean_sym],
+            sol[density_HPI_sym],
+            sol[density_ocean_sym]
+        ),
+        "numpy"
+    )
+
+FAST_MULTILAYER_SOLVER = _build_fast_solver()
+
 
 def find_slope(array1, array2):
     '''Finds the absolute value of the slope of a curve for each data point.'''
@@ -209,7 +317,8 @@ def inertia(r, rho, delta_r, M):
         inertia += delta_r*rho[i]*r[i]**4
 
     return inertia*(8*np.pi)/(3*M[-1]*r[-1]*r[-1])
-
+'''
 def precision_round(number, digits=3):
     power = "{:e}".format(number).split('e')[1]
     return round(number, -(int(power) - digits))
+'''
